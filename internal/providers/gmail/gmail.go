@@ -9,7 +9,10 @@ import (
 	"net"
 	"net/http"
 
+	"encoding/json"
+
 	"github.com/pkg/browser"
+	"github.com/zalando/go-keyring"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
@@ -55,6 +58,16 @@ func randomBytes() *[]byte {
 func makeChallenge(v *string) string {
 	s256 := sha256.Sum256([]byte(*v))
 	return base64.RawURLEncoding.EncodeToString(s256[:])
+}
+
+func storeToken(t *oauth2.Token, inMemory bool) {
+	tb, err := json.Marshal(t)
+	if err != nil {
+		panic(err)
+	}
+	if err := keyring.Set("orion-core", "user-token", string(tb)); err != nil {
+		panic(err)
+	}
 }
 
 // New implements OAuth2 installed application flow and returns a gmail service client.

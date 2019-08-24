@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/zalando/go-keyring"
+	"golang.org/x/oauth2"
 )
 
 func TestMakeChallenge(t *testing.T) {
@@ -44,4 +47,15 @@ func TestCreateResponseListenerChannelIsClosed(t *testing.T) {
 	case <-time.After(time.Second * 10):
 		assert.Fail(t, "Channel is still open!")
 	}
+}
+
+func TestStoreToken(t *testing.T) {
+	keyring.MockInit()
+	token := &oauth2.Token{}
+	storeToken(token, true)
+	r, err := keyring.Get("orion-core", "user-token")
+	if err != nil {
+		t.Fatal(t)
+	}
+	assert.Equal(t, r, "{\"access_token\":\"\",\"expiry\":\"0001-01-01T00:00:00Z\"}")
 }
